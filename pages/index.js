@@ -127,7 +127,7 @@ export default function Home() {
         style={{
           minHeight: "100vh",
           fontFamily: "Montserrat, Arial, sans-serif",
-          backgroundColor: "#f7f5f8",
+          backgroundColor: "#f6f3f8",
           backgroundImage: 'url("/web background.png")',
           backgroundRepeat: "repeat",
           backgroundSize: "520px auto",
