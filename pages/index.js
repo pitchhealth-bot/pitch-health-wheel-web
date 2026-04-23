@@ -65,10 +65,10 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
 
-  const wheelSize = 620;
+  const wheelSize = 520;
   const center = wheelSize / 2;
-  const radius = 285;
-  const textRadius = 185;
+  const radius = 235;
+  const textRadius = 155;
   const degreesPerSlice = 360 / rewards.length;
 
   const slices = useMemo(() => {
@@ -82,8 +82,6 @@ export default function Home() {
       return {
         reward,
         index,
-        startAngle,
-        endAngle,
         midAngle,
         path: describeArcSlice(center, center, radius, startAngle, endAngle),
         textX: textPoint.x,
@@ -102,11 +100,7 @@ export default function Home() {
     const selectedIndex = rewards.findIndex((r) => r.value === selected.value);
 
     const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
-
-    // Pointer is at top center, so align winning slice center to 0 degrees visually.
     const targetRotation = 360 - targetSliceCenter;
-
-    // Add extra spins for animation.
     const extraSpins = 360 * (8 + Math.floor(Math.random() * 2));
     const finalRotation = rotation + extraSpins + targetRotation;
 
@@ -140,26 +134,26 @@ export default function Home() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "24px 16px 48px",
+          padding: "20px 16px 40px",
         }}
       >
         <div
           style={{
             width: "100%",
-            maxWidth: "980px",
+            maxWidth: "900px",
             textAlign: "center",
           }}
         >
           <h1
             style={{
-              margin: "0 0 24px",
-              fontSize: "clamp(34px, 5vw, 72px)",
+              margin: "0 0 18px",
+              fontSize: "clamp(32px, 4.2vw, 60px)",
               fontWeight: 900,
               letterSpacing: "1px",
               lineHeight: 1.05,
             }}
           >
-            🔥 PITCH HEALTH WHEEL 🔥
+            🎉 PITCH HEALTH WHEEL 🎉
           </h1>
 
           <div
@@ -169,15 +163,14 @@ export default function Home() {
               margin: "0 auto",
             }}
           >
-            {/* Inverted pointer pointing down */}
             <div
               style={{
                 width: 0,
                 height: 0,
-                borderLeft: "26px solid transparent",
-                borderRight: "26px solid transparent",
-                borderTop: "58px solid white",
-                margin: "0 auto 14px",
+                borderLeft: "22px solid transparent",
+                borderRight: "22px solid transparent",
+                borderTop: "48px solid white",
+                margin: "0 auto 12px",
                 filter: "drop-shadow(0 0 10px rgba(255,255,255,0.18))",
                 position: "relative",
                 zIndex: 5,
@@ -186,8 +179,8 @@ export default function Home() {
 
             <div
               style={{
-                width: "min(78vw, 620px)",
-                height: "min(78vw, 620px)",
+                width: "min(68vw, 520px)",
+                height: "min(68vw, 520px)",
                 margin: "0 auto",
                 position: "relative",
               }}
@@ -218,22 +211,9 @@ export default function Home() {
                     </radialGradient>
                   </defs>
 
-                  {/* outer ring */}
-                  <circle
-                    cx={center}
-                    cy={center}
-                    r={300}
-                    fill="#A855F7"
-                  />
+                  <circle cx={center} cy={center} r={248} fill="#A855F7" />
+                  <circle cx={center} cy={center} r={241} fill="#6D28D9" />
 
-                  <circle
-                    cx={center}
-                    cy={center}
-                    r={292}
-                    fill="#6D28D9"
-                  />
-
-                  {/* slices */}
                   {slices.map((slice, index) => {
                     const textRotation = slice.midAngle;
                     return (
@@ -244,12 +224,11 @@ export default function Home() {
                           stroke="rgba(255,255,255,0.85)"
                           strokeWidth="3"
                         />
-
                         <text
                           x={slice.textX}
                           y={slice.textY}
                           fill="#FFFFFF"
-                          fontSize="30"
+                          fontSize="26"
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
@@ -261,21 +240,15 @@ export default function Home() {
                     );
                   })}
 
-                  {/* center hub */}
                   <circle
                     cx={center}
                     cy={center}
-                    r={62}
+                    r={54}
                     fill="url(#centerGlow)"
                     stroke="#A855F7"
                     strokeWidth="10"
                   />
-                  <circle
-                    cx={center}
-                    cy={center}
-                    r={22}
-                    fill="#0b0412"
-                  />
+                  <circle cx={center} cy={center} r={20} fill="#0b0412" />
                 </svg>
               </div>
             </div>
@@ -285,18 +258,18 @@ export default function Home() {
             onClick={spin}
             disabled={spinning}
             style={{
-              marginTop: "28px",
+              marginTop: "24px",
               background: "linear-gradient(135deg, #6D28D9 0%, #A855F7 100%)",
               color: "#FFFFFF",
               border: "none",
-              borderRadius: "22px",
-              padding: "20px 42px",
-              fontSize: "clamp(24px, 3vw, 34px)",
+              borderRadius: "20px",
+              padding: "18px 38px",
+              fontSize: "clamp(22px, 2.8vw, 30px)",
               fontWeight: 800,
               cursor: spinning ? "not-allowed" : "pointer",
               boxShadow: "0 0 26px rgba(168, 85, 247, 0.45)",
               opacity: spinning ? 0.75 : 1,
-              minWidth: "260px",
+              minWidth: "230px",
             }}
           >
             🎡 SPIN
@@ -304,14 +277,14 @@ export default function Home() {
 
           <div
             style={{
-              minHeight: "58px",
-              marginTop: "26px",
-              fontSize: "clamp(26px, 3vw, 42px)",
+              minHeight: "52px",
+              marginTop: "22px",
+              fontSize: "clamp(24px, 2.8vw, 38px)",
               fontWeight: 800,
               color: result ? "#C084FC" : "#ffffff",
             }}
           >
-            {result ? `🔥 You won ${result}` : ""}
+            {result ? `🎉 You won ${result}` : ""}
           </div>
         </div>
       </div>
