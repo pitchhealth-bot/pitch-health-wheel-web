@@ -1,27 +1,30 @@
 import { useState } from "react";
 
 const rewards = [
-  { value: "$25", weight: 22 },
-  { value: "$30", weight: 18 },
-  { value: "$35", weight: 15 },
-  { value: "$40", weight: 12 },
-  { value: "$45", weight: 10 },
-  { value: "$50", weight: 8 },
-  { value: "$55", weight: 6 },
-  { value: "$60", weight: 4 },
-  { value: "$65", weight: 3 },
-  { value: "$70", weight: 2 },
+  "$25",
+  "$30",
+  "$35",
+  "$40",
+  "$45",
+  "$50",
+  "$55",
+  "$60",
+  "$65",
+  "$70",
 ];
 
-function getReward() {
-  const total = rewards.reduce((a, b) => a + b.weight, 0);
-  let rand = Math.random() * total;
-
-  for (const r of rewards) {
-    if (rand < r.weight) return r.value;
-    rand -= r.weight;
-  }
-}
+const colors = [
+  "#f97316",
+  "#fb923c",
+  "#ea580c",
+  "#fdba74",
+  "#f97316",
+  "#fb923c",
+  "#ea580c",
+  "#fdba74",
+  "#f97316",
+  "#fb923c",
+];
 
 export default function Home() {
   const [rotation, setRotation] = useState(0);
@@ -32,10 +35,16 @@ export default function Home() {
     if (spinning) return;
 
     setSpinning(true);
-    const reward = getReward();
-    const randomRotation = 3600 + Math.random() * 360;
+    setResult("");
 
-    setRotation(rotation + randomRotation);
+    const randomIndex = Math.floor(Math.random() * rewards.length);
+    const reward = rewards[randomIndex];
+
+    const degreesPerSlice = 360 / rewards.length;
+    const finalRotation =
+      3600 + (360 - randomIndex * degreesPerSlice - degreesPerSlice / 2);
+
+    setRotation(rotation + finalRotation);
 
     setTimeout(() => {
       setResult(reward);
@@ -44,26 +53,62 @@ export default function Home() {
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px", color: "white", background: "black", height: "100vh" }}>
+    <div style={{ background: "black", color: "white", textAlign: "center", height: "100vh", paddingTop: "30px" }}>
       <h1>🔥 PITCH HEALTH WHEEL 🔥</h1>
 
+      {/* POINTER */}
       <div
         style={{
-          margin: "40px auto",
-          width: "300px",
-          height: "300px",
-          borderRadius: "50%",
-          border: "10px solid orange",
-          transform: `rotate(${rotation}deg)`,
-          transition: "transform 3s ease-out",
+          width: 0,
+          height: 0,
+          borderLeft: "15px solid transparent",
+          borderRight: "15px solid transparent",
+          borderBottom: "30px solid white",
+          margin: "0 auto",
         }}
       />
 
-      <button onClick={spin} style={{ padding: "15px 30px", fontSize: "18px" }}>
-        🎡 SPIN
+      {/* WHEEL */}
+      <div
+        style={{
+          margin: "20px auto",
+          width: "300px",
+          height: "300px",
+          borderRadius: "50%",
+          border: "8px solid orange",
+          transform: `rotate(${rotation}deg)`,
+          transition: "transform 3s ease-out",
+          background: `conic-gradient(
+            ${rewards
+              .map(
+                (_, i) =>
+                  `${colors[i]} ${i * 36}deg ${(i + 1) * 36}deg`
+              )
+              .join(",")}
+          )`,
+        }}
+      />
+
+      <button
+        onClick={spin}
+        disabled={spinning}
+        style={{
+          padding: "15px 30px",
+          fontSize: "18px",
+          borderRadius: "10px",
+          marginTop: "20px",
+          background: spinning ? "#555" : "orange",
+          color: "white",
+          border: "none",
+          cursor: spinning ? "not-allowed" : "pointer",
+        }}
+      >
+        {spinning ? "Spinning..." : "🎡 SPIN"}
       </button>
 
-      {result && <h2 style={{ marginTop: "20px" }}>🔥 You won {result}</h2>}
+      {result && (
+        <h2 style={{ marginTop: "20px" }}>🔥 You won {result}</h2>
+      )}
     </div>
   );
 }
