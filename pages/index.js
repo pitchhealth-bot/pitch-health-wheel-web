@@ -40,7 +40,7 @@ function weightedPick(items) {
 }
 
 function polarToCartesian(cx, cy, r, angleInDegrees) {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
   return {
     x: cx + r * Math.cos(angleInRadians),
     y: cy + r * Math.sin(angleInRadians),
@@ -65,10 +65,10 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
 
-  const wheelSize = 520;
+  const wheelSize = 440;
   const center = wheelSize / 2;
-  const radius = 235;
-  const textRadius = 155;
+  const radius = 198;
+  const textRadius = 132;
   const degreesPerSlice = 360 / rewards.length;
 
   const slices = useMemo(() => {
@@ -76,12 +76,10 @@ export default function Home() {
       const startAngle = index * degreesPerSlice;
       const endAngle = startAngle + degreesPerSlice;
       const midAngle = startAngle + degreesPerSlice / 2;
-
       const textPoint = polarToCartesian(center, center, textRadius, midAngle);
 
       return {
         reward,
-        index,
         midAngle,
         path: describeArcSlice(center, center, radius, startAngle, endAngle),
         textX: textPoint.x,
@@ -120,7 +118,7 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap"
           rel="stylesheet"
         />
       </Head>
@@ -134,23 +132,23 @@ export default function Home() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "20px 16px 40px",
+          padding: "20px 16px 36px",
         }}
       >
         <div
           style={{
             width: "100%",
-            maxWidth: "900px",
+            maxWidth: "980px",
             textAlign: "center",
           }}
         >
           <h1
             style={{
               margin: "0 0 18px",
-              fontSize: "clamp(32px, 4.2vw, 60px)",
+              fontSize: "clamp(26px, 4vw, 56px)",
               fontWeight: 900,
-              letterSpacing: "1px",
               lineHeight: 1.05,
+              whiteSpace: "nowrap",
             }}
           >
             🎉 PITCH HEALTH WHEEL 🎉
@@ -167,11 +165,11 @@ export default function Home() {
               style={{
                 width: 0,
                 height: 0,
-                borderLeft: "22px solid transparent",
-                borderRight: "22px solid transparent",
-                borderTop: "48px solid white",
-                margin: "0 auto 12px",
-                filter: "drop-shadow(0 0 10px rgba(255,255,255,0.18))",
+                borderLeft: "20px solid transparent",
+                borderRight: "20px solid transparent",
+                borderTop: "44px solid white",
+                margin: "0 auto 10px",
+                filter: "drop-shadow(0 0 8px rgba(255,255,255,0.18))",
                 position: "relative",
                 zIndex: 5,
               }}
@@ -179,8 +177,8 @@ export default function Home() {
 
             <div
               style={{
-                width: "min(68vw, 520px)",
-                height: "min(68vw, 520px)",
+                width: "min(58vw, 440px)",
+                height: "min(58vw, 440px)",
                 margin: "0 auto",
                 position: "relative",
               }}
@@ -193,7 +191,7 @@ export default function Home() {
                   transition: spinning
                     ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)"
                     : "none",
-                  filter: "drop-shadow(0 0 22px rgba(147, 51, 234, 0.28))",
+                  filter: "drop-shadow(0 0 18px rgba(147, 51, 234, 0.28))",
                 }}
               >
                 <svg
@@ -211,8 +209,8 @@ export default function Home() {
                     </radialGradient>
                   </defs>
 
-                  <circle cx={center} cy={center} r={248} fill="#A855F7" />
-                  <circle cx={center} cy={center} r={241} fill="#6D28D9" />
+                  <circle cx={center} cy={center} r={210} fill="#A855F7" />
+                  <circle cx={center} cy={center} r={204} fill="#6D28D9" />
 
                   {slices.map((slice, index) => {
                     const textRotation = slice.midAngle;
@@ -222,13 +220,13 @@ export default function Home() {
                           d={slice.path}
                           fill={segmentColors[index % segmentColors.length]}
                           stroke="rgba(255,255,255,0.85)"
-                          strokeWidth="3"
+                          strokeWidth="2.5"
                         />
                         <text
                           x={slice.textX}
                           y={slice.textY}
                           fill="#FFFFFF"
-                          fontSize="26"
+                          fontSize="20"
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
@@ -243,12 +241,12 @@ export default function Home() {
                   <circle
                     cx={center}
                     cy={center}
-                    r={54}
+                    r={46}
                     fill="url(#centerGlow)"
                     stroke="#A855F7"
-                    strokeWidth="10"
+                    strokeWidth="8"
                   />
-                  <circle cx={center} cy={center} r={20} fill="#0b0412" />
+                  <circle cx={center} cy={center} r={18} fill="#0b0412" />
                 </svg>
               </div>
             </div>
@@ -258,18 +256,18 @@ export default function Home() {
             onClick={spin}
             disabled={spinning}
             style={{
-              marginTop: "24px",
+              marginTop: "22px",
               background: "linear-gradient(135deg, #6D28D9 0%, #A855F7 100%)",
               color: "#FFFFFF",
               border: "none",
-              borderRadius: "20px",
-              padding: "18px 38px",
-              fontSize: "clamp(22px, 2.8vw, 30px)",
+              borderRadius: "18px",
+              padding: "16px 34px",
+              fontSize: "clamp(20px, 2.6vw, 28px)",
               fontWeight: 800,
               cursor: spinning ? "not-allowed" : "pointer",
-              boxShadow: "0 0 26px rgba(168, 85, 247, 0.45)",
+              boxShadow: "0 0 22px rgba(168, 85, 247, 0.42)",
               opacity: spinning ? 0.75 : 1,
-              minWidth: "230px",
+              minWidth: "210px",
             }}
           >
             🎡 SPIN
@@ -277,9 +275,9 @@ export default function Home() {
 
           <div
             style={{
-              minHeight: "52px",
-              marginTop: "22px",
-              fontSize: "clamp(24px, 2.8vw, 38px)",
+              minHeight: "48px",
+              marginTop: "18px",
+              fontSize: "clamp(22px, 2.6vw, 34px)",
               fontWeight: 800,
               color: result ? "#C084FC" : "#ffffff",
             }}
