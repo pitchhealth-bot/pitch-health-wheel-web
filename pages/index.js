@@ -71,6 +71,10 @@ function describeArcSlice(cx, cy, r, startAngle, endAngle) {
   ].join(" ");
 }
 
+function normalizeAngle(angle) {
+  return ((angle % 360) + 360) % 360;
+}
+
 function makeConfetti(count = 80) {
   return Array.from({ length: count }).map((_, i) => ({
     id: `${Date.now()}-${i}`,
@@ -131,9 +135,17 @@ export default function Home() {
     const selectedIndex = rewards.findIndex((r) => r.value === selected.value);
 
     const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
-    const targetRotation = 360 - targetSliceCenter;
+
+    // We want the selected slice center to end exactly under the top pointer.
+    const desiredNormalizedRotation = normalizeAngle(360 - targetSliceCenter);
+    const currentNormalizedRotation = normalizeAngle(rotation);
+
+    // Rotate from current position to the desired landing position.
+    const correction =
+      normalizeAngle(desiredNormalizedRotation - currentNormalizedRotation);
+
     const extraSpins = 360 * (8 + Math.floor(Math.random() * 2));
-    const finalRotation = rotation + extraSpins + targetRotation;
+    const finalRotation = rotation + extraSpins + correction;
 
     setRotation(finalRotation);
 
@@ -194,7 +206,6 @@ export default function Home() {
           overflow: "hidden",
         }}
       >
-        {/* Confetti */}
         {confetti.map((piece) => (
           <div
             key={piece.id}
@@ -202,7 +213,7 @@ export default function Home() {
               position: "absolute",
               top: "-20px",
               left: `${piece.left}%`,
-              width: piece.shape === "circle" ? `${piece.size}px` : `${piece.size}px`,
+              width: `${piece.size}px`,
               height: piece.shape === "circle" ? `${piece.size}px` : `${piece.size * 0.6}px`,
               borderRadius: piece.shape === "circle" ? "50%" : "2px",
               background: piece.color,
@@ -244,7 +255,6 @@ export default function Home() {
               margin: "0 auto",
             }}
           >
-            {/* Purple inverted triangle pointer */}
             <div
               style={{
                 width: 0,
@@ -293,7 +303,6 @@ export default function Home() {
                     </radialGradient>
                   </defs>
 
-                  {/* stronger outlined outer rings */}
                   <circle cx={center} cy={center} r={204} fill="#B085F5" stroke="#ffffff" strokeWidth="3" />
                   <circle cx={center} cy={center} r={198} fill="#8D5DE8" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" />
 
