@@ -92,14 +92,11 @@ export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
-  const [sessionId, setSessionId] = useState(null);
+  const [sessionId, setSessionId] = useState("");
   const [confetti, setConfetti] = useState([]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const session = params.get("session");
-    if (session) setSessionId(session);
-  }, []);
+  const [alreadyUsed, setAlreadyUsed] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const wheelSize = 430;
   const center = wheelSize / 2;
@@ -124,25 +121,62 @@ export default function Home() {
     });
   }, [center, radius, textRadius, degreesPerSlice]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const session = params.get("session") || "";
+    setSessionId(session);
+
+    if (!session) {
+      setErrorMessage("Missing session.");
+      setLoadingSession(false);
+      return;
+    }
+
+    if (!API_BASE) {
+      setErrorMessage("Missing NEXT_PUBLIC_API_BASE_URL in Vercel.");
+      setLoadingSession(false);
+      return;
+    }
+
+    fetch(`${API_BASE}/session-status?sessionId=${encodeURIComponent(session)}`)
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load session status");
+        }
+
+        if (data.status === "Completed") {
+          setAlreadyUsed(true);
+          setResult(data.reward || "");
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load session status:", err);
+        setErrorMessage(err.message || "Failed to load session.");
+      })
+      .finally(() => {
+        setLoadingSession(false);
+      });
+  }, []);
+
   const spin = () => {
-    if (spinning) return;
+    if (spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE) {
+      return;
+    }
 
     setSpinning(true);
     setResult("");
     setConfetti([]);
+    setErrorMessage("");
 
     const selected = weightedPick(rewards);
     const selectedIndex = rewards.findIndex((r) => r.value === selected.value);
 
     const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
-
-    // We want the selected slice center to end exactly under the top pointer.
     const desiredNormalizedRotation = normalizeAngle(360 - targetSliceCenter);
     const currentNormalizedRotation = normalizeAngle(rotation);
-
-    // Rotate from current position to the desired landing position.
-    const correction =
-      normalizeAngle(desiredNormalizedRotation - currentNormalizedRotation);
+    const correction = normalizeAngle(desiredNormalizedRotation - currentNormalizedRotation);
 
     const extraSpins = 360 * (8 + Math.floor(Math.random() * 2));
     const finalRotation = rotation + extraSpins + correction;
@@ -150,30 +184,41 @@ export default function Home() {
     setRotation(finalRotation);
 
     setTimeout(async () => {
-      setResult(selected.value);
-      setSpinning(false);
-      setConfetti(makeConfetti());
+      try {
+        const response = await fetch(`${API_BASE}/complete-spin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            reward: selected.value,
+          }),
+        });
 
-      if (sessionId && API_BASE) {
-        try {
-          await fetch(`${API_BASE}/complete-spin`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              sessionId,
-              reward: selected.value,
-            }),
-          });
-        } catch (error) {
-          console.error("Error sending result:", error);
+        const data = await response.json();
+
+        console.log("complete-spin response:", data);
+
+        if (!response.ok) {
+          throw new Error(data.details || data.error || "Failed to complete spin");
         }
-      }
 
-      setTimeout(() => {
-        setConfetti([]);
-      }, 4200);
+        const finalReward = data.reward || selected.value;
+
+        setResult(finalReward);
+        setAlreadyUsed(true);
+        setConfetti(makeConfetti());
+      } catch (err) {
+        console.error("Error sending result:", err);
+        setErrorMessage(err.message || "Failed to save spin result.");
+      } finally {
+        setSpinning(false);
+
+        setTimeout(() => {
+          setConfetti([]);
+        }, 4200);
+      }
     }, 4200);
   };
 
@@ -351,7 +396,7 @@ export default function Home() {
 
           <button
             onClick={spin}
-            disabled={spinning}
+            disabled={spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE}
             style={{
               marginTop: "22px",
               background: "linear-gradient(135deg, #6e42ae 0%, #8D5DE8 100%)",
@@ -361,13 +406,22 @@ export default function Home() {
               padding: "16px 34px",
               fontSize: "clamp(20px, 2.6vw, 28px)",
               fontWeight: 800,
-              cursor: spinning ? "not-allowed" : "pointer",
+              cursor:
+                spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE
+                  ? "not-allowed"
+                  : "pointer",
               boxShadow: "0 0 22px rgba(110, 66, 174, 0.28)",
-              opacity: spinning ? 0.75 : 1,
+              opacity: spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE ? 0.6 : 1,
               minWidth: "210px",
             }}
           >
-            🎡 SPIN
+            {loadingSession
+              ? "Loading..."
+              : alreadyUsed
+              ? "✅ USED"
+              : spinning
+              ? "🎡 SPINNING..."
+              : "🎡 SPIN"}
           </button>
 
           <div
@@ -382,6 +436,19 @@ export default function Home() {
           >
             {result ? `🎉 You won ${result}` : ""}
           </div>
+
+          {errorMessage ? (
+            <div
+              style={{
+                marginTop: "12px",
+                color: "#b42318",
+                fontWeight: 700,
+                fontSize: "16px",
+              }}
+            >
+              {errorMessage}
+            </div>
+          ) : null}
         </div>
 
         <style jsx global>{`
