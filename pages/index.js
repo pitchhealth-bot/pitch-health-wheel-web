@@ -65,10 +65,10 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
 
-  const wheelSize = 440;
+  const wheelSize = 430;
   const center = wheelSize / 2;
-  const radius = 198;
-  const textRadius = 132;
+  const radius = 192;
+  const textRadius = 128;
   const degreesPerSlice = 360 / rewards.length;
 
   const slices = useMemo(() => {
@@ -126,9 +126,11 @@ export default function Home() {
       <div
         style={{
           minHeight: "100vh",
-          background: "#000000",
-          color: "#ffffff",
           fontFamily: "Montserrat, Arial, sans-serif",
+          backgroundColor: "#f7f5f8",
+          backgroundImage: 'url("/web background.png")',
+          backgroundRepeat: "repeat",
+          backgroundSize: "520px auto",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -149,6 +151,7 @@ export default function Home() {
               fontWeight: 900,
               lineHeight: 1.05,
               whiteSpace: "nowrap",
+              color: "#6e42ae",
             }}
           >
             🎉 PITCH HEALTH WHEEL 🎉
@@ -167,9 +170,9 @@ export default function Home() {
                 height: 0,
                 borderLeft: "20px solid transparent",
                 borderRight: "20px solid transparent",
-                borderTop: "44px solid white",
+                borderTop: "44px solid #ffffff",
                 margin: "0 auto 10px",
-                filter: "drop-shadow(0 0 8px rgba(255,255,255,0.18))",
+                filter: "drop-shadow(0 0 8px rgba(0,0,0,0.12))",
                 position: "relative",
                 zIndex: 5,
               }}
@@ -177,8 +180,8 @@ export default function Home() {
 
             <div
               style={{
-                width: "min(58vw, 440px)",
-                height: "min(58vw, 440px)",
+                width: "min(56vw, 430px)",
+                height: "min(56vw, 430px)",
                 margin: "0 auto",
                 position: "relative",
               }}
@@ -191,7 +194,7 @@ export default function Home() {
                   transition: spinning
                     ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)"
                     : "none",
-                  filter: "drop-shadow(0 0 18px rgba(147, 51, 234, 0.28))",
+                  filter: "drop-shadow(0 0 18px rgba(110, 66, 174, 0.28))",
                 }}
               >
                 <svg
@@ -209,8 +212,8 @@ export default function Home() {
                     </radialGradient>
                   </defs>
 
-                  <circle cx={center} cy={center} r={210} fill="#A855F7" />
-                  <circle cx={center} cy={center} r={204} fill="#6D28D9" />
+                  <circle cx={center} cy={center} r={204} fill="#B085F5" />
+                  <circle cx={center} cy={center} r={198} fill="#8D5DE8" />
 
                   {slices.map((slice, index) => {
                     const textRotation = slice.midAngle;
@@ -219,7 +222,7 @@ export default function Home() {
                         <path
                           d={slice.path}
                           fill={segmentColors[index % segmentColors.length]}
-                          stroke="rgba(255,255,255,0.85)"
+                          stroke="rgba(255,255,255,0.92)"
                           strokeWidth="2.5"
                         />
                         <text
@@ -241,7 +244,7 @@ export default function Home() {
                   <circle
                     cx={center}
                     cy={center}
-                    r={46}
+                    r={45}
                     fill="url(#centerGlow)"
                     stroke="#A855F7"
                     strokeWidth="8"
@@ -257,7 +260,7 @@ export default function Home() {
             disabled={spinning}
             style={{
               marginTop: "22px",
-              background: "linear-gradient(135deg, #6D28D9 0%, #A855F7 100%)",
+              background: "linear-gradient(135deg, #6e42ae 0%, #8D5DE8 100%)",
               color: "#FFFFFF",
               border: "none",
               borderRadius: "18px",
@@ -265,7 +268,7 @@ export default function Home() {
               fontSize: "clamp(20px, 2.6vw, 28px)",
               fontWeight: 800,
               cursor: spinning ? "not-allowed" : "pointer",
-              boxShadow: "0 0 22px rgba(168, 85, 247, 0.42)",
+              boxShadow: "0 0 22px rgba(110, 66, 174, 0.28)",
               opacity: spinning ? 0.75 : 1,
               minWidth: "210px",
             }}
@@ -279,7 +282,7 @@ export default function Home() {
               marginTop: "18px",
               fontSize: "clamp(22px, 2.6vw, 34px)",
               fontWeight: 800,
-              color: result ? "#C084FC" : "#ffffff",
+              color: result ? "#6e42ae" : "#1f172c",
             }}
           >
             {result ? `🎉 You won ${result}` : ""}
