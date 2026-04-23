@@ -1,5 +1,7 @@
 import Head from "next/head";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const rewards = [
   { value: "$25", weight: 22 },
@@ -15,16 +17,8 @@ const rewards = [
 ];
 
 const segmentColors = [
-  "#4C1D95",
-  "#6D28D9",
-  "#8B5CF6",
-  "#7C3AED",
-  "#2E1065",
-  "#9333EA",
-  "#C084FC",
-  "#A855F7",
-  "#5B21B6",
-  "#7E22CE",
+  "#4C1D95","#6D28D9","#8B5CF6","#7C3AED","#2E1065",
+  "#9333EA","#C084FC","#A855F7","#5B21B6","#7E22CE"
 ];
 
 function weightedPick(items) {
@@ -35,58 +29,57 @@ function weightedPick(items) {
     if (random < item.weight) return item;
     random -= item.weight;
   }
-
   return items[0];
 }
 
-function polarToCartesian(cx, cy, r, angleInDegrees) {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(angleInRadians),
-    y: cy + r * Math.sin(angleInRadians),
-  };
+function polarToCartesian(cx, cy, r, angle) {
+  const rad = ((angle - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function describeArcSlice(cx, cy, r, startAngle, endAngle) {
-  const start = polarToCartesian(cx, cy, r, endAngle);
-  const end = polarToCartesian(cx, cy, r, startAngle);
-  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+function describeArc(cx, cy, r, start, end) {
+  const s = polarToCartesian(cx, cy, r, end);
+  const e = polarToCartesian(cx, cy, r, start);
+  const large = end - start <= 180 ? "0" : "1";
 
-  return [
-    `M ${cx} ${cy}`,
-    `L ${start.x} ${start.y}`,
-    `A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
-    "Z",
-  ].join(" ");
+  return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${large} 0 ${e.x} ${e.y} Z`;
 }
 
 export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
 
-  const wheelSize = 430;
-  const center = wheelSize / 2;
-  const radius = 192;
-  const textRadius = 128;
-  const degreesPerSlice = 360 / rewards.length;
+  // 🔥 Get session from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const session = params.get("session");
+    if (session) setSessionId(session);
+  }, []);
+
+  const size = 420;
+  const center = size / 2;
+  const radius = 185;
+  const textRadius = 120;
+  const deg = 360 / rewards.length;
 
   const slices = useMemo(() => {
-    return rewards.map((reward, index) => {
-      const startAngle = index * degreesPerSlice;
-      const endAngle = startAngle + degreesPerSlice;
-      const midAngle = startAngle + degreesPerSlice / 2;
-      const textPoint = polarToCartesian(center, center, textRadius, midAngle);
+    return rewards.map((r, i) => {
+      const start = i * deg;
+      const end = start + deg;
+      const mid = start + deg / 2;
+      const p = polarToCartesian(center, center, textRadius, mid);
 
       return {
-        reward,
-        midAngle,
-        path: describeArcSlice(center, center, radius, startAngle, endAngle),
-        textX: textPoint.x,
-        textY: textPoint.y,
+        ...r,
+        mid,
+        path: describeArc(center, center, radius, start, end),
+        x: p.x,
+        y: p.y,
       };
     });
-  }, [center, radius, textRadius, degreesPerSlice]);
+  }, []);
 
   const spin = () => {
     if (spinning) return;
@@ -95,18 +88,33 @@ export default function Home() {
     setResult("");
 
     const selected = weightedPick(rewards);
-    const selectedIndex = rewards.findIndex((r) => r.value === selected.value);
+    const index = rewards.findIndex(r => r.value === selected.value);
 
-    const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
-    const targetRotation = 360 - targetSliceCenter;
-    const extraSpins = 360 * (8 + Math.floor(Math.random() * 2));
-    const finalRotation = rotation + extraSpins + targetRotation;
+    const target = 360 - (index * deg + deg / 2);
+    const final = rotation + 360 * 8 + target;
 
-    setRotation(finalRotation);
+    setRotation(final);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setResult(selected.value);
       setSpinning(false);
+
+      // 🔥 SEND RESULT TO BOT
+      if (sessionId && API_BASE) {
+        try {
+          await fetch(`${API_BASE}/complete-spin`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: sessionId,
+              reward: selected.value
+            }),
+          });
+        } catch (err) {
+          console.error("Error sending result:", err);
+        }
+      }
+
     }, 4200);
   };
 
@@ -114,179 +122,87 @@ export default function Home() {
     <>
       <Head>
         <title>Pitch Health Wheel</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap"
-          rel="stylesheet"
-        />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet" />
       </Head>
 
       <div
         style={{
           minHeight: "100vh",
-          fontFamily: "Montserrat, Arial, sans-serif",
-          backgroundColor: "#f6f3f8",
+          fontFamily: "Montserrat",
           backgroundImage: 'url("/web background.png")',
           backgroundRepeat: "repeat",
-          backgroundSize: "520px auto",
+          backgroundSize: "500px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "20px 16px 36px",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "980px",
-            textAlign: "center",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 18px",
-              fontSize: "clamp(26px, 4vw, 56px)",
-              fontWeight: 900,
-              lineHeight: 1.05,
-              whiteSpace: "nowrap",
-              color: "#6e42ae",
-            }}
-          >
+        <div style={{ textAlign: "center" }}>
+
+          <h1 style={{
+            fontSize: "48px",
+            fontWeight: "900",
+            color: "#6e42ae",
+            whiteSpace: "nowrap"
+          }}>
             🎉 PITCH HEALTH WHEEL 🎉
           </h1>
 
-          <div
-            style={{
-              position: "relative",
-              width: "fit-content",
-              margin: "0 auto",
-            }}
-          >
-            <div
-              style={{
-                width: 0,
-                height: 0,
-                borderLeft: "20px solid transparent",
-                borderRight: "20px solid transparent",
-                borderTop: "44px solid #ffffff",
-                margin: "0 auto 10px",
-                filter: "drop-shadow(0 0 8px rgba(0,0,0,0.12))",
-                position: "relative",
-                zIndex: 5,
-              }}
-            />
+          {/* POINTER */}
+          <div style={{
+            borderLeft: "20px solid transparent",
+            borderRight: "20px solid transparent",
+            borderTop: "40px solid white",
+            margin: "0 auto 10px"
+          }} />
 
-            <div
-              style={{
-                width: "min(56vw, 430px)",
-                height: "min(56vw, 430px)",
-                margin: "0 auto",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  transform: `rotate(${rotation}deg)`,
-                  transition: spinning
-                    ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)"
-                    : "none",
-                  filter: "drop-shadow(0 0 18px rgba(110, 66, 174, 0.28))",
-                }}
-              >
-                <svg
-                  viewBox={`0 0 ${wheelSize} ${wheelSize}`}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    display: "block",
-                  }}
-                >
-                  <defs>
-                    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#2E1065" />
-                      <stop offset="100%" stopColor="#12051f" />
-                    </radialGradient>
-                  </defs>
-
-                  <circle cx={center} cy={center} r={204} fill="#B085F5" />
-                  <circle cx={center} cy={center} r={198} fill="#8D5DE8" />
-
-                  {slices.map((slice, index) => {
-                    const textRotation = slice.midAngle;
-                    return (
-                      <g key={slice.reward.value}>
-                        <path
-                          d={slice.path}
-                          fill={segmentColors[index % segmentColors.length]}
-                          stroke="rgba(255,255,255,0.92)"
-                          strokeWidth="2.5"
-                        />
-                        <text
-                          x={slice.textX}
-                          y={slice.textY}
-                          fill="#FFFFFF"
-                          fontSize="20"
-                          fontWeight="800"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          transform={`rotate(${textRotation}, ${slice.textX}, ${slice.textY})`}
-                        >
-                          {slice.reward.value}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  <circle
-                    cx={center}
-                    cy={center}
-                    r={45}
-                    fill="url(#centerGlow)"
-                    stroke="#A855F7"
-                    strokeWidth="8"
-                  />
-                  <circle cx={center} cy={center} r={18} fill="#0b0412" />
-                </svg>
-              </div>
-            </div>
+          {/* WHEEL */}
+          <div style={{
+            width: "420px",
+            height: "420px",
+            margin: "auto",
+            transform: `rotate(${rotation}deg)`,
+            transition: "transform 4s ease-out"
+          }}>
+            <svg viewBox={`0 0 ${size} ${size}`}>
+              {slices.map((s, i) => (
+                <g key={i}>
+                  <path d={s.path} fill={segmentColors[i]} stroke="white" strokeWidth="2" />
+                  <text
+                    x={s.x}
+                    y={s.y}
+                    fill="white"
+                    fontSize="18"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    transform={`rotate(${s.mid}, ${s.x}, ${s.y})`}
+                  >
+                    {s.value}
+                  </text>
+                </g>
+              ))}
+            </svg>
           </div>
 
-          <button
-            onClick={spin}
-            disabled={spinning}
+          <button onClick={spin} disabled={spinning}
             style={{
-              marginTop: "22px",
-              background: "linear-gradient(135deg, #6e42ae 0%, #8D5DE8 100%)",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: "18px",
-              padding: "16px 34px",
-              fontSize: "clamp(20px, 2.6vw, 28px)",
-              fontWeight: 800,
-              cursor: spinning ? "not-allowed" : "pointer",
-              boxShadow: "0 0 22px rgba(110, 66, 174, 0.28)",
-              opacity: spinning ? 0.75 : 1,
-              minWidth: "210px",
-            }}
-          >
+              marginTop: "20px",
+              padding: "15px 30px",
+              fontSize: "20px",
+              borderRadius: "12px",
+              background: "#6e42ae",
+              color: "white",
+              border: "none"
+            }}>
             🎡 SPIN
           </button>
 
-          <div
-            style={{
-              minHeight: "48px",
-              marginTop: "18px",
-              fontSize: "clamp(22px, 2.6vw, 34px)",
-              fontWeight: 800,
-              color: result ? "#6e42ae" : "#1f172c",
-            }}
-          >
-            {result ? `🎉 You won ${result}` : ""}
-          </div>
+          {result && (
+            <h2 style={{ marginTop: "20px", color: "#6e42ae" }}>
+              🎉 You won {result}
+            </h2>
+          )}
+
         </div>
       </div>
     </>
