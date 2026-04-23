@@ -29,15 +29,6 @@ const segmentColors = [
   "#7E22CE",
 ];
 
-const confettiColors = [
-  "#6e42ae",
-  "#8B5CF6",
-  "#A855F7",
-  "#C084FC",
-  "#4C1D95",
-  "#ffffff",
-];
-
 function weightedPick(items) {
   const total = items.reduce((sum, item) => sum + item.weight, 0);
   let random = Math.random() * total;
@@ -75,25 +66,11 @@ function normalizeAngle(angle) {
   return ((angle % 360) + 360) % 360;
 }
 
-function makeConfetti(count = 80) {
-  return Array.from({ length: count }).map((_, i) => ({
-    id: `${Date.now()}-${i}`,
-    left: Math.random() * 100,
-    delay: Math.random() * 0.6,
-    duration: 2.6 + Math.random() * 1.4,
-    size: 8 + Math.random() * 10,
-    rotate: Math.random() * 360,
-    color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-    shape: Math.random() > 0.5 ? "circle" : "rect",
-  }));
-}
-
 export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [sessionId, setSessionId] = useState("");
-  const [confetti, setConfetti] = useState([]);
   const [alreadyUsed, setAlreadyUsed] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -167,7 +144,6 @@ export default function Home() {
 
     setSpinning(true);
     setResult("");
-    setConfetti([]);
     setErrorMessage("");
 
     const selected = weightedPick(rewards);
@@ -176,7 +152,9 @@ export default function Home() {
     const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
     const desiredNormalizedRotation = normalizeAngle(360 - targetSliceCenter);
     const currentNormalizedRotation = normalizeAngle(rotation);
-    const correction = normalizeAngle(desiredNormalizedRotation - currentNormalizedRotation);
+    const correction = normalizeAngle(
+      desiredNormalizedRotation - currentNormalizedRotation
+    );
 
     const extraSpins = 360 * (8 + Math.floor(Math.random() * 2));
     const finalRotation = rotation + extraSpins + correction;
@@ -197,7 +175,6 @@ export default function Home() {
         });
 
         const data = await response.json();
-
         console.log("complete-spin response:", data);
 
         if (!response.ok) {
@@ -205,19 +182,13 @@ export default function Home() {
         }
 
         const finalReward = data.reward || selected.value;
-
         setResult(finalReward);
         setAlreadyUsed(true);
-        setConfetti(makeConfetti());
       } catch (err) {
         console.error("Error sending result:", err);
         setErrorMessage(err.message || "Failed to save spin result.");
       } finally {
         setSpinning(false);
-
-        setTimeout(() => {
-          setConfetti([]);
-        }, 4200);
       }
     }, 4200);
   };
@@ -251,25 +222,6 @@ export default function Home() {
           overflow: "hidden",
         }}
       >
-        {confetti.map((piece) => (
-          <div
-            key={piece.id}
-            style={{
-              position: "absolute",
-              top: "-20px",
-              left: `${piece.left}%`,
-              width: `${piece.size}px`,
-              height: piece.shape === "circle" ? `${piece.size}px` : `${piece.size * 0.6}px`,
-              borderRadius: piece.shape === "circle" ? "50%" : "2px",
-              background: piece.color,
-              transform: `rotate(${piece.rotate}deg)`,
-              animation: `fall ${piece.duration}s linear ${piece.delay}s forwards`,
-              zIndex: 50,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-            }}
-          />
-        ))}
-
         <div
           style={{
             width: "100%",
@@ -293,13 +245,7 @@ export default function Home() {
             🎉 PITCH HEALTH WHEEL 🎉
           </h1>
 
-          <div
-            style={{
-              position: "relative",
-              width: "fit-content",
-              margin: "0 auto",
-            }}
-          >
+          <div style={{ position: "relative", width: "fit-content", margin: "0 auto" }}>
             <div
               style={{
                 width: 0,
@@ -411,7 +357,10 @@ export default function Home() {
                   ? "not-allowed"
                   : "pointer",
               boxShadow: "0 0 22px rgba(110, 66, 174, 0.28)",
-              opacity: spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE ? 0.6 : 1,
+              opacity:
+                spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE
+                  ? 0.6
+                  : 1,
               minWidth: "210px",
             }}
           >
@@ -450,19 +399,6 @@ export default function Home() {
             </div>
           ) : null}
         </div>
-
-        <style jsx global>{`
-          @keyframes fall {
-            0% {
-              transform: translateY(0) rotate(0deg);
-              opacity: 1;
-            }
-            100% {
-              transform: translateY(110vh) rotate(720deg);
-              opacity: 0.95;
-            }
-          }
-        `}</style>
       </div>
     </>
   );
