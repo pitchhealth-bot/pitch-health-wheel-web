@@ -4,24 +4,24 @@ import { useEffect, useMemo, useState } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const cashRewards = [
-  { value: "$25", weight: 22 },
-  { value: "$30", weight: 18 },
-  { value: "$35", weight: 15 },
-  { value: "$40", weight: 12 },
-  { value: "$45", weight: 10 },
-  { value: "$50", weight: 8 },
-  { value: "$55", weight: 6 },
-  { value: "$60", weight: 4 },
-  { value: "$65", weight: 3 },
-  { value: "$70", weight: 2 },
+  { value: "$25", weight: 15 },
+  { value: "$30", weight: 13 },
+  { value: "$35", weight: 11 },
+  { value: "$40", weight: 8 },
+  { value: "$45", weight: 7 },
+  { value: "$50", weight: 6 },
+  { value: "$55", weight: 4 },
+  { value: "$60", weight: 3 },
+  { value: "$65", weight: 2 },
+  { value: "$70", weight: 1 },
 ];
 
 // Promotional rewards remain eligible through December 7, 2026 (US Eastern Time).
 // Their exact value strings are passed unchanged to the bot's Spin Log.
 const cupPointRewards = [
-  { value: "+1 Cup Point", weight: 1 },
-  { value: "+2 Cup Points", weight: 1 },
-  { value: "+3 Cup Points", weight: 1 },
+  { value: "+1 Cup Point", weight: 15 },
+  { value: "+2 Cup Points", weight: 10 },
+  { value: "+3 Cup Points", weight: 5 },
 ];
 const CUP_POINTS_END = Date.parse("2026-12-08T05:00:00Z");
 
@@ -333,7 +333,7 @@ export default function Home() {
                       <g key={slice.reward.value}>
                         <path
                           d={slice.path}
-                          fill={isCupPoint ? ["#B45309", "#D97706", "#F59E0B"][index - cashRewards.length] : segmentColors[index % segmentColors.length]}
+                          fill={isCupPoint ? ["#6D28D9", "#7C3AED", "#5B21B6"][index - cashRewards.length] : segmentColors[index % segmentColors.length]}
                           stroke="#ffffff"
                           strokeWidth="2.8"
                         />
@@ -344,7 +344,7 @@ export default function Home() {
                           stroke="rgba(46,16,101,0.65)"
                           strokeWidth="0.9"
                           paintOrder="stroke"
-                          fontSize={isCupPoint ? "15" : "20"}
+                          fontSize={isCupPoint ? "17" : "20"}
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
@@ -352,9 +352,8 @@ export default function Home() {
                         >
                           {isCupPoint ? (
                             <>
-                              <tspan x={slice.textX} dy="-16">{cupAmount}</tspan>
-                              <tspan x={slice.textX} dy="16">CUP</tspan>
-                              <tspan x={slice.textX} dy="16">POINT{cupAmount === "+1" ? "" : "S"}</tspan>
+                              <tspan x={slice.textX} dy="-9">{cupAmount}</tspan>
+                              <tspan x={slice.textX} dy="19">CUP</tspan>
                             </>
                           ) : slice.reward.value}
                         </text>
