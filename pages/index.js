@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const rewards = [
+const cashRewards = [
   { value: "$25", weight: 22 },
   { value: "$30", weight: 18 },
   { value: "$35", weight: 15 },
@@ -15,6 +15,21 @@ const rewards = [
   { value: "$65", weight: 3 },
   { value: "$70", weight: 2 },
 ];
+
+// Promotional rewards remain eligible through December 7, 2026 (US Eastern Time).
+// Their exact value strings are passed unchanged to the bot's Spin Log.
+const cupPointRewards = [
+  { value: "+1 Cup Point", weight: 1 },
+  { value: "+2 Cup Points", weight: 1 },
+  { value: "+3 Cup Points", weight: 1 },
+];
+const CUP_POINTS_END = Date.parse("2026-12-08T05:00:00Z");
+
+function getRewards() {
+  return Date.now() < CUP_POINTS_END
+    ? [...cashRewards, ...cupPointRewards]
+    : cashRewards;
+}
 
 const segmentColors = [
   "#4C1D95",
@@ -79,7 +94,12 @@ export default function Home() {
   const center = wheelSize / 2;
   const radius = 192;
   const textRadius = 128;
+  const [rewards, setRewards] = useState(cashRewards);
   const degreesPerSlice = 360 / rewards.length;
+
+  useEffect(() => {
+    setRewards(getRewards());
+  }, []);
 
   const slices = useMemo(() => {
     return rewards.map((reward, index) => {
@@ -146,7 +166,15 @@ export default function Home() {
     setResult("");
     setErrorMessage("");
 
-    const selected = weightedPick(rewards);
+    // Re-evaluate eligibility at spin time, even if the page was left open.
+    const eligibleRewards = getRewards();
+    if (eligibleRewards.length !== rewards.length) {
+      setRewards(eligibleRewards);
+      setSpinning(false);
+      setErrorMessage("Prize options have updated. Please spin again.");
+      return;
+    }
+    const selected = weightedPick(eligibleRewards);
     const selectedIndex = rewards.findIndex((r) => r.value === selected.value);
 
     const targetSliceCenter = selectedIndex * degreesPerSlice + degreesPerSlice / 2;
@@ -314,7 +342,7 @@ export default function Home() {
                           stroke="rgba(46,16,101,0.65)"
                           strokeWidth="0.9"
                           paintOrder="stroke"
-                          fontSize="20"
+                          fontSize={slice.reward.value.startsWith("+") ? "12" : "20"}
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
