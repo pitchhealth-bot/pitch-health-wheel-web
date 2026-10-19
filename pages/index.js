@@ -262,6 +262,7 @@ export default function Home() {
             zIndex: 2,
           }}
         >
+          <div style={{color:"#9673ad",letterSpacing:"3px",fontSize:"11px",fontWeight:800,marginBottom:"8px"}}>✦ THE PITCH HEALTH EXPERIENCE ✦</div>
           <h1
             style={{
               margin: "0 0 18px",
@@ -276,6 +277,7 @@ export default function Home() {
             PITCH HEALTH WHEEL
           </h1>
 
+          <p style={{ color:"#8e72a3",fontWeight:700,margin:"5px 0 18px",fontSize:"14px" }}>Your spin. Your moment. Your reward.</p>
           <div style={{ position: "relative", width: "fit-content", margin: "0 auto" }}>
             <div
               style={{
@@ -420,10 +422,18 @@ export default function Home() {
               fontWeight: 800,
               color: result ? "#482075" : "#1f172c",
               textShadow: result ? "0 2px 0 rgba(255,255,255,0.45)" : "none",
+              padding: result ? "15px 23px" : "0",
+              background: result ? "linear-gradient(135deg,#351061,#6f2aab)" : "transparent",
+              border: result ? "2px solid #ecc372" : "none",
+              borderRadius: "18px",
+              color: result ? "#ffecb7" : "#1f172c",
+              boxShadow: result ? "0 10px 30px rgba(67,20,103,.25)" : "none",
             }}
           >
             {result ? `✦ YOU WON ${result}! ✦` : ""}
           </div>
+
+          {celebrating ? <div aria-hidden="true" style={{ fontSize:"27px", animation:"celebrate .7s ease-out",marginTop:"4px" }}>🎉 ✨ 🎊 ✨ 🎉</div> : null}
 
           {errorMessage ? (
             <div
@@ -439,6 +449,7 @@ export default function Home() {
           ) : null}
         </div>
       </div>
+      <style jsx global>{`@keyframes celebrate{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}`}</style>
     </>
   );
 }
