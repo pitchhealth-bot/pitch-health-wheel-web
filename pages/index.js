@@ -327,11 +327,13 @@ export default function Home() {
 
                   {slices.map((slice, index) => {
                     const textRotation = slice.midAngle;
+                    const isCupPoint = slice.reward.value.startsWith("+");
+                    const cupAmount = isCupPoint ? slice.reward.value.split(" ")[0] : "";
                     return (
                       <g key={slice.reward.value}>
                         <path
                           d={slice.path}
-                          fill={segmentColors[index % segmentColors.length]}
+                          fill={isCupPoint ? ["#B45309", "#D97706", "#F59E0B"][index - cashRewards.length] : segmentColors[index % segmentColors.length]}
                           stroke="#ffffff"
                           strokeWidth="2.8"
                         />
@@ -342,13 +344,19 @@ export default function Home() {
                           stroke="rgba(46,16,101,0.65)"
                           strokeWidth="0.9"
                           paintOrder="stroke"
-                          fontSize={slice.reward.value.startsWith("+") ? "12" : "20"}
+                          fontSize={isCupPoint ? "15" : "20"}
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
                           transform={`rotate(${textRotation}, ${slice.textX}, ${slice.textY})`}
                         >
-                          {slice.reward.value}
+                          {isCupPoint ? (
+                            <>
+                              <tspan x={slice.textX} dy="-16">{cupAmount}</tspan>
+                              <tspan x={slice.textX} dy="16">CUP</tspan>
+                              <tspan x={slice.textX} dy="16">POINT{cupAmount === "+1" ? "" : "S"}</tspan>
+                            </>
+                          ) : slice.reward.value}
                         </text>
                       </g>
                     );
