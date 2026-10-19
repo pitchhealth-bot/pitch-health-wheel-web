@@ -93,7 +93,7 @@ export default function Home() {
   const wheelSize = 430;
   const center = wheelSize / 2;
   const radius = 192;
-  const textRadius = 137;
+  const textRadius = 145;
   const [rewards, setRewards] = useState(cashRewards);
   const degreesPerSlice = 360 / rewards.length;
 
@@ -291,10 +291,11 @@ export default function Home() {
                   <circle cx={center} cy={center} r="198" fill="#2c074f" stroke="#ffda76" strokeWidth="2" />
                   {slices.map((slice, index) => {
                     const isCup = slice.reward.value.startsWith("+");
-                    const amount = isCup ? slice.reward.value.split(" ")[0] : slice.reward.value;
-                    const angle = slice.midAngle;
-                    const iconPoint = polarToCartesian(center, center, 174, angle);
-                    // Use upright horizontal text to avoid collisions and upside-down labels.
+                    const [number, , pointWord] = isCup ? slice.reward.value.split(" ") : [];
+                    const isLight = isCup && index !== cashRewards.length + 2;
+                    const labelColor = isLight ? "#381058" : "#FFFFFF";
+                    // Labels sit on their individual wedges, and counter-rotate with the wheel.
+                    // Render a compact three-line Cup Point label without decorative icons.
                     return (
                       <g key={slice.reward.value}>
                         <path
@@ -303,25 +304,19 @@ export default function Home() {
                           stroke="#e3baf7" strokeWidth="1.8"
                         />
                         <g transform={`rotate(${-normalizeAngle(rotation)} ${slice.textX} ${slice.textY})`}>
-                        {isCup ? (
-                          <text x={slice.textX} y={slice.textY - 13} textAnchor="middle"
-                            fill={index === cashRewards.length + 2 ? "#fff" : "#3e1169"}
-                            fontFamily="Montserrat, sans-serif" fontSize="17" fontWeight="900">
-                            <tspan x={slice.textX} dy="0">{amount} Cup</tspan>
-                            <tspan x={slice.textX} dy="18" fontSize="13" fontWeight="400">
-                              {amount === "+1" ? "Point" : "Points"}
-                            </tspan>
-                          </text>
-                        ) : (
-                          <text x={slice.textX} y={slice.textY}
-                            textAnchor="middle" dominantBaseline="middle"
-                            fill="#fff" fontSize="22" fontWeight="900"
-                            stroke="rgba(32,6,61,.42)" strokeWidth=".8" paintOrder="stroke">{amount}</text>
-                        )}
-                        <text x={iconPoint.x} y={iconPoint.y} textAnchor="middle" dominantBaseline="middle"
-                          fontSize="17" opacity=".94" fill={isCup && index !== cashRewards.length + 2 ? "#5d138f" : "#ffffff"}>
-                          {isCup ? "★" : "$"}
-                        </text>
+                          {isCup ? (
+                            <text
+                              x={slice.textX} y={slice.textY - 15} textAnchor="middle"
+                              fill={labelColor} fontFamily="Montserrat, Arial, sans-serif">
+                              <tspan x={slice.textX} dy="0" fontSize="17" fontWeight="900">{number}</tspan>
+                              <tspan x={slice.textX} dy="16" fontSize="13" fontWeight="800">Cup</tspan>
+                              <tspan x={slice.textX} dy="14" fontSize="11" fontWeight="400">{pointWord}</tspan>
+                            </text>
+                          ) : (
+                            <text x={slice.textX} y={slice.textY + 7} textAnchor="middle"
+                              fill={labelColor} fontSize="21" fontWeight="900"
+                              fontFamily="Montserrat, Arial, sans-serif">{slice.reward.value}</text>
+                          )}
                         </g>
                       </g>
                     );
