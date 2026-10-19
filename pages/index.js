@@ -89,11 +89,12 @@ export default function Home() {
   const [alreadyUsed, setAlreadyUsed] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [celebrating, setCelebrating] = useState(false);
 
   const wheelSize = 430;
   const center = wheelSize / 2;
   const radius = 192;
-  const textRadius = 128;
+  const textRadius = 147;
   const [rewards, setRewards] = useState(cashRewards);
   const degreesPerSlice = 360 / rewards.length;
 
@@ -116,7 +117,7 @@ export default function Home() {
         textY: textPoint.y,
       };
     });
-  }, [center, radius, textRadius, degreesPerSlice]);
+  }, [center, radius, textRadius, degreesPerSlice, rewards]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -164,6 +165,7 @@ export default function Home() {
 
     setSpinning(true);
     setResult("");
+    setCelebrating(false);
     setErrorMessage("");
 
     // Re-evaluate eligibility at spin time, even if the page was left open.
@@ -212,6 +214,7 @@ export default function Home() {
         const finalReward = data.reward || selected.value;
         setResult(finalReward);
         setAlreadyUsed(true);
+        setCelebrating(true);
       } catch (err) {
         console.error("Error sending result:", err);
         setErrorMessage(err.message || "Failed to save spin result.");
@@ -238,10 +241,10 @@ export default function Home() {
         style={{
           minHeight: "100vh",
           fontFamily: "Montserrat, Arial, sans-serif",
-          backgroundColor: "#f6f3f8",
-          backgroundImage: 'url("/web background.png")',
+          backgroundColor: "#f8f3ff",
+          backgroundImage: "radial-gradient(circle at 50% 45%, #f2e5ff 0%, #fcfaff 56%, #f0e7fa 100%)",
           backgroundRepeat: "repeat",
-          backgroundSize: "520px auto",
+          backgroundSize: "cover",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -253,26 +256,28 @@ export default function Home() {
         <div
           style={{
             width: "100%",
-            maxWidth: "980px",
+            maxWidth: "900px",
             textAlign: "center",
             position: "relative",
             zIndex: 2,
           }}
         >
+          <div style={{color:"#9673ad",letterSpacing:"3px",fontSize:"11px",fontWeight:800,marginBottom:"8px"}}>✦ THE PITCH HEALTH EXPERIENCE ✦</div>
           <h1
             style={{
               margin: "0 0 18px",
-              fontSize: "clamp(26px, 4vw, 56px)",
+              fontSize: "clamp(27px, 5vw, 58px)",
               fontWeight: 900,
               lineHeight: 1.05,
               whiteSpace: "nowrap",
-              color: "#6e42ae",
+              color: "#3d126d",
               textShadow: "0 2px 0 rgba(255,255,255,0.45)",
             }}
           >
-            🎉 PITCH HEALTH WHEEL 🎉
+            PITCH HEALTH WHEEL
           </h1>
 
+          <p style={{ color:"#8e72a3",fontWeight:700,margin:"5px 0 18px",fontSize:"14px" }}>Your spin. Your moment. Your reward.</p>
           <div style={{ position: "relative", width: "fit-content", margin: "0 auto" }}>
             <div
               style={{
@@ -280,7 +285,7 @@ export default function Home() {
                 height: 0,
                 borderLeft: "22px solid transparent",
                 borderRight: "22px solid transparent",
-                borderTop: "46px solid #6e42ae",
+                borderTop: "46px solid #e6ab45",
                 margin: "0 auto 10px",
                 filter: "drop-shadow(0 0 8px rgba(110,66,174,0.32))",
                 position: "relative",
@@ -290,8 +295,8 @@ export default function Home() {
 
             <div
               style={{
-                width: "min(56vw, 430px)",
-                height: "min(56vw, 430px)",
+                width: "min(86vw, 550px)",
+                height: "min(86vw, 550px)",
                 margin: "0 auto",
                 position: "relative",
               }}
@@ -304,7 +309,7 @@ export default function Home() {
                   transition: spinning
                     ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)"
                     : "none",
-                  filter: "drop-shadow(0 0 22px rgba(110, 66, 174, 0.26))",
+                  filter: "drop-shadow(0 13px 23px rgba(64, 22, 103, 0.25))",
                 }}
               >
                 <svg
@@ -322,20 +327,21 @@ export default function Home() {
                     </radialGradient>
                   </defs>
 
-                  <circle cx={center} cy={center} r={204} fill="#B085F5" stroke="#ffffff" strokeWidth="3" />
-                  <circle cx={center} cy={center} r={198} fill="#8D5DE8" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" />
+                  <circle cx={center} cy={center} r={211} fill="#bc8129" stroke="#fff0b7" strokeWidth="6" />
+                  <circle cx={center} cy={center} r={202} fill="#3b116b" stroke="#ffe8a0" strokeWidth="4" />
+                  {Array.from({length: 24}, (_, i) => { const a=(i*2*Math.PI)/24;return <circle key={i} cx={center+205*Math.sin(a)} cy={center-205*Math.cos(a)} r="3.7" fill="#fff1b1" stroke="#e8a642" strokeWidth="1" />; })}
 
                   {slices.map((slice, index) => {
-                    const textRotation = slice.midAngle;
+                    const textRotation = 0;
                     const isCupPoint = slice.reward.value.startsWith("+");
                     const cupAmount = isCupPoint ? slice.reward.value.split(" ")[0] : "";
                     return (
                       <g key={slice.reward.value}>
                         <path
                           d={slice.path}
-                          fill={isCupPoint ? ["#6D28D9", "#7C3AED", "#5B21B6"][index - cashRewards.length] : segmentColors[index % segmentColors.length]}
-                          stroke="#ffffff"
-                          strokeWidth="2.8"
+                          fill={isCupPoint ? ["#f6dda0", "#e7bc68", "#ffe6aa"][index - cashRewards.length] : segmentColors[index % segmentColors.length]}
+                          stroke="#e9b95d"
+                          strokeWidth="1.8"
                         />
                         <text
                           x={slice.textX}
@@ -344,7 +350,7 @@ export default function Home() {
                           stroke="rgba(46,16,101,0.65)"
                           strokeWidth="0.9"
                           paintOrder="stroke"
-                          fontSize={isCupPoint ? "17" : "20"}
+                          fontSize={isCupPoint ? "19" : "24"}
                           fontWeight="800"
                           textAnchor="middle"
                           dominantBaseline="middle"
@@ -366,10 +372,10 @@ export default function Home() {
                     cy={center}
                     r={45}
                     fill="url(#centerGlow)"
-                    stroke="#ffffff"
-                    strokeWidth="3"
+                    stroke="#efbf65"
+                    strokeWidth="8"
                   />
-                  <circle cx={center} cy={center} r={18} fill="#0b0412" stroke="#C084FC" strokeWidth="2" />
+                  <text x={center} y={center + 10} fontSize="27" fontWeight="900" textAnchor="middle" fill="#ffe6a0">PH</text>
                 </svg>
               </div>
             </div>
@@ -380,10 +386,10 @@ export default function Home() {
             disabled={spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE}
             style={{
               marginTop: "22px",
-              background: "linear-gradient(135deg, #6e42ae 0%, #8D5DE8 100%)",
+              background: "linear-gradient(135deg, #2f0a5b 0%, #6b239f 100%)",
               color: "#FFFFFF",
-              border: "2px solid rgba(255,255,255,0.75)",
-              borderRadius: "18px",
+              border: "2px solid #e8be69",
+              borderRadius: "16px",
               padding: "16px 34px",
               fontSize: "clamp(20px, 2.6vw, 28px)",
               fontWeight: 800,
@@ -402,10 +408,10 @@ export default function Home() {
             {loadingSession
               ? "Loading..."
               : alreadyUsed
-              ? "✅ USED"
+              ? "✓ SPIN COMPLETE"
               : spinning
               ? "🎡 SPINNING..."
-              : "🎡 SPIN"}
+              : "✦ SPIN THE WHEEL ✦"}
           </button>
 
           <div
@@ -414,12 +420,20 @@ export default function Home() {
               marginTop: "18px",
               fontSize: "clamp(22px, 2.6vw, 34px)",
               fontWeight: 800,
-              color: result ? "#6e42ae" : "#1f172c",
+              color: result ? "#482075" : "#1f172c",
               textShadow: result ? "0 2px 0 rgba(255,255,255,0.45)" : "none",
+              padding: result ? "15px 23px" : "0",
+              background: result ? "linear-gradient(135deg,#351061,#6f2aab)" : "transparent",
+              border: result ? "2px solid #ecc372" : "none",
+              borderRadius: "18px",
+              color: result ? "#ffecb7" : "#1f172c",
+              boxShadow: result ? "0 10px 30px rgba(67,20,103,.25)" : "none",
             }}
           >
-            {result ? `🎉 You won ${result}` : ""}
+            {result ? `✦ YOU WON ${result}! ✦` : ""}
           </div>
+
+          {celebrating ? <div aria-hidden="true" style={{ fontSize:"27px", animation:"celebrate .7s ease-out",marginTop:"4px" }}>🎉 ✨ 🎊 ✨ 🎉</div> : null}
 
           {errorMessage ? (
             <div
@@ -435,6 +449,7 @@ export default function Home() {
           ) : null}
         </div>
       </div>
+      <style jsx global>{`@keyframes celebrate{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}`}</style>
     </>
   );
 }
