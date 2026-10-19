@@ -233,9 +233,19 @@ export default function Home() {
       </Head>
       <main className="stage">
         <div className="burst" aria-hidden="true" />
-        <div className="confetti confetti-a" aria-hidden="true" />
-        <div className="confetti confetti-b" aria-hidden="true" />
-        <div className="confetti confetti-c" aria-hidden="true" />
+        <div className="confetti-field" aria-hidden="true">
+          {Array.from({ length: 30 }, (_, index) => (
+            <span key={index}
+              style={{
+                left: `${(index * 37 + 11) % 94 + 3}%`,
+                top: `${(index * 29 + 17) % 76 + 12}%`,
+                transform: `rotate(${index * 47}deg)`,
+                background: index % 3 === 0 ? "#e9ac35" : "#a76ae2",
+                opacity: index % 3 === 0 ? 0.8 : 0.5,
+              }}
+            />
+          ))}
+        </div>
         <div className="content">
           <header className="header">
             <div className="heading-top">PITCH HEALTH</div>
@@ -329,24 +339,26 @@ export default function Home() {
         .header { margin: 0 auto 6px; position: relative; z-index:2; }
         .heading-top { font-size: clamp(35px,7vw,69px); font-weight:900; line-height:1; letter-spacing:-.055em; color:#531094; text-shadow: 0 3px 0 #c6a2ef, 0 5px 12px #a266bb35; }
         .heading-bottom { display:inline-block; margin-top:2px; padding: 0 32px 4px; border: 3px solid #f2bd53; border-radius: 20px; background:linear-gradient(160deg,#58139c,#28054f); box-shadow: 0 5px 0 #9b5212, 0 10px 28px #8214c14f; transform:rotate(-1deg); }
-        .heading-bottom span { font-size:clamp(40px,8vw,76px); font-weight:900; letter-spacing:-.06em; line-height:1.1; color:#ffefd0; text-shadow:0 3px 0 #a76d2b,0 6px 0 #632579; }
-        .wheel-area { position:relative; width:min(88vw,530px); margin: 14px auto 0; }
+        .heading-bottom span { font-size:clamp(35px,7vw,62px); font-weight:900; letter-spacing:-.06em; line-height:1.1; color:#ffefd0; text-shadow:0 3px 0 #a76d2b,0 6px 0 #632579; }
+        .wheel-area { position:relative; width:min(86vw, 430px, 48vh); margin: 12px auto 0; }
         .wheel-shell { position:relative; width:100%; aspect-ratio:1; border-radius:50%; border:8px solid #f3b649; padding:12px; background: linear-gradient(135deg,#40106e,#1e0839 55%,#7d24b8); box-shadow:0 0 0 4px #5b1499,0 0 0 7px #f5cf71,0 18px 44px #5e088c55,0 0 60px #a724ee6e; }
         .rotating-wheel { width:100%; height:100%; border-radius:50%; overflow:hidden; filter:drop-shadow(0 0 3px #e5a94f); }
         .pointer { position:absolute; top:-14px; left:50%; transform:translateX(-50%); z-index:4; width:0; height:0; border-left:22px solid transparent; border-right:22px solid transparent; border-top:55px solid #e7a52e; filter:drop-shadow(0 3px 2px #5c2359); }
         .pointer:after { content:""; position:absolute; left:-14px; top:-52px; border-left:14px solid transparent; border-right:14px solid transparent; border-top:37px solid #fff0ad; }
         .bulb-ring { position:absolute; inset:0; pointer-events:none; border-radius:50%; z-index:3; }
         .bulb-ring span { position:absolute; width:13px; height:13px; transform:translate(-50%,-50%); background:radial-gradient(circle at 32% 28%,#fff,#ffe8a8 38%,#f5a72c 72%); border:1px solid #fbc95c; border-radius:50%; box-shadow:0 0 7px 3px #ffe494,0 0 13px #fff0a5; }
-        .spin-button,.result { margin:22px auto 0; min-height:67px; padding:13px 35px; border-radius:18px; border:3px solid #f5d28a; background:linear-gradient(165deg,#7423bc,#300a55); box-shadow:0 5px 0 #6b247e, 0 10px 26px #5d12965e; color:#fff; font-family:inherit; font-weight:900; font-size:clamp(22px,3vw,29px); }
+        .spin-button,.result { margin:16px auto 0; min-height:55px; padding:10px 30px; border-radius:18px; border:3px solid #f5d28a; background:linear-gradient(165deg,#7423bc,#300a55); box-shadow:0 5px 0 #6b247e, 0 10px 26px #5d12965e; color:#fff; font-family:inherit; font-weight:900; font-size:clamp(22px,3vw,29px); }
         .spin-button { cursor:pointer; min-width:220px; }
         .spin-button:disabled { cursor:not-allowed; opacity:.7; }
         .result { display:flex; justify-content:center; align-items:center; gap:14px; width:fit-content; max-width:100%; }
         .result strong { color:#ffd477; }
         .result-icon { font-size:24px; }
         .error-message { margin:15px auto; max-width:550px; color:#ad2525; font-size:14px; font-weight:700; }
+        .confetti-field { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+        .confetti-field span { position:absolute; width:8px; height:18px; border-radius:3px; box-shadow:0 1px 4px #6a23931f; }
         .confetti { position:absolute; z-index:0; width:19px; height:42px; background:linear-gradient(110deg,#fbe29b,#d78c20); border-radius:7px; opacity:.8; transform:rotate(35deg); }
         .confetti-a { left:14%; top:37%; } .confetti-b { right:16%; top:35%; transform:rotate(-34deg); background:linear-gradient(110deg,#ba68ed,#6322ba); } .confetti-c { left:24%; bottom:13%; transform:rotate(-28deg); }
-        @media(max-width:560px) { .stage { padding:24px 12px 30px; } .wheel-area { width:min(92vw,470px); margin-top:22px; } .wheel-shell { border-width:5px; padding:8px; } .bulb-ring span { width:9px; height:9px; } .pointer { border-left-width:15px;border-right-width:15px;border-top-width:40px; top:-10px; } .pointer:after { left:-10px; top:-38px; border-left-width:10px; border-right-width:10px; border-top-width:27px; } .heading-bottom { padding:0 24px 3px; border-radius:13px; } .result { gap:7px; padding:12px 14px; } .result-icon { font-size:18px; } }
+        @media(max-width:560px) { .stage { padding:24px 12px 30px; } .wheel-area { width:min(90vw, 370px, 45vh); margin-top:14px; } .wheel-shell { border-width:5px; padding:8px; } .bulb-ring span { width:9px; height:9px; } .pointer { border-left-width:15px;border-right-width:15px;border-top-width:40px; top:-10px; } .pointer:after { left:-10px; top:-38px; border-left-width:10px; border-right-width:10px; border-top-width:27px; } .heading-bottom { padding:0 24px 3px; border-radius:13px; } .result { gap:7px; padding:12px 14px; } .result-icon { font-size:18px; } }
       `}</style>
     </>
   );
