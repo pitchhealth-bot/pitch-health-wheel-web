@@ -229,7 +229,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </Head>
       <main className="stage">
         <div className="burst" aria-hidden="true" />
@@ -246,6 +246,19 @@ export default function Home() {
             />
           ))}
         </div>
+        {result && !spinning ? (
+          <div className="confetti-rain" aria-hidden="true">
+            {Array.from({ length: 90 }, (_, index) => (
+              <span key={index} style={{
+                left: `${(index * 71 + 13) % 100}%`,
+                animationDelay: `${(index % 15) * -0.17}s`,
+                animationDuration: `${2.5 + (index % 7) * 0.3}s`,
+                background: ["#f5bd44", "#7833ca", "#b977f2", "#fff1a8"][index % 4],
+                transform: `rotate(${index * 41}deg)`
+              }} />
+            ))}
+          </div>
+        ) : null}
         <div className="content">
           <header className="header">
             <div className="heading-top">PITCH HEALTH</div>
@@ -289,26 +302,22 @@ export default function Home() {
                           fill={isCup ? ["#ebd3ff", "#bd89f7", "#330a62"][index - cashRewards.length] : ["#39046b", "#7712d5", "#b775f4", "#4c0b80", "#8c24e6", "#290747", "#8021d4", "#b16deb", "#6211ab", "#4a087c"][index % 10]}
                           stroke="#e3baf7" strokeWidth="1.8"
                         />
-                        <g
-                          style={{
-                            transform: `rotate(${-rotation}deg)`,
-                            transformOrigin: `${slice.textX}px ${slice.textY}px`,
-                            transition: spinning ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)" : "none",
-                          }}
-                        >
-                        <text
-                          x={slice.textX} y={slice.textY - (isCup ? 1 : 0)}
-                          textAnchor="middle" dominantBaseline="middle"
-                          fill={isCup && index !== cashRewards.length + 2 ? "#3e1169" : "#fff"}
-                          fontSize={isCup ? "22" : "22"} fontWeight="900"
-                          stroke={isCup && index !== cashRewards.length + 2 ? "rgba(255,255,255,.12)" : "rgba(32,6,61,.42)"}
-                          strokeWidth=".8" paintOrder="stroke"
-                        >{amount}</text>
+                        <g transform={`rotate(${-normalizeAngle(rotation)} ${slice.textX} ${slice.textY})`}>
                         {isCup ? (
-                          <text x={slice.textX} y={slice.textY + 22} textAnchor="middle"
+                          <text x={slice.textX} y={slice.textY - 13} textAnchor="middle"
                             fill={index === cashRewards.length + 2 ? "#fff" : "#3e1169"}
-                            fontSize="13" fontWeight="900">CUP</text>
-                        ) : null}
+                            fontFamily="Montserrat, sans-serif" fontSize="17" fontWeight="900">
+                            <tspan x={slice.textX} dy="0">{amount} Cup</tspan>
+                            <tspan x={slice.textX} dy="18" fontSize="13" fontWeight="400">
+                              {amount === "+1" ? "Point" : "Points"}
+                            </tspan>
+                          </text>
+                        ) : (
+                          <text x={slice.textX} y={slice.textY}
+                            textAnchor="middle" dominantBaseline="middle"
+                            fill="#fff" fontSize="22" fontWeight="900"
+                            stroke="rgba(32,6,61,.42)" strokeWidth=".8" paintOrder="stroke">{amount}</text>
+                        )}
                         <text x={iconPoint.x} y={iconPoint.y} textAnchor="middle" dominantBaseline="middle"
                           fontSize="17" opacity=".94" fill={isCup && index !== cashRewards.length + 2 ? "#5d138f" : "#ffffff"}>
                           {isCup ? "★" : "$"}
@@ -323,6 +332,12 @@ export default function Home() {
                 </svg>
               </div>
             </div>
+            {result && !spinning ? (
+              <div className="winning-popup" role="status" aria-live="polite">
+                <div className="winning-title">YOU WON!</div>
+                <div className="winning-prize">{result}</div>
+              </div>
+            ) : null}
           </div>
           {result ? (
             <div className="result" role="status">
@@ -362,6 +377,16 @@ export default function Home() {
         .result strong { color:#ffd477; }
         .result-icon { font-size:24px; }
         .error-message { margin:15px auto; max-width:550px; color:#ad2525; font-size:14px; font-weight:700; }
+        .wheel-area { isolation:isolate; }
+        .winning-popup { position:absolute; left:50%; top:50%; z-index:8; transform:translate(-50%,-50%); width:min(83%,330px); padding:20px 14px; border:4px solid #f4cc6b; border-radius:24px; color:white; text-align:center; background:linear-gradient(160deg,#781bc2,#2b064f); box-shadow:0 9px 0 #6c2674,0 17px 46px #4e086a99; animation:winner-pop .7s both, winner-glow 1s ease-in-out .7s 3; pointer-events:none; }
+        .winning-title { font-size:clamp(22px,4vw,34px); font-weight:900; letter-spacing:.04em; }
+        .winning-prize { color:#ffe18f; font-size:clamp(20px,3.5vw,30px); font-weight:900; margin-top:7px; }
+        .confetti-rain { position:fixed; inset:0; z-index:6; pointer-events:none; overflow:hidden; }
+        .confetti-rain span { position:absolute; top:-25px; width:9px; height:17px; border-radius:2px; animation:fall-confetti linear 1 both; }
+        @keyframes fall-confetti { from { translate:0 -10vh; rotate:0deg; opacity:1; } to { translate:65px 115vh; rotate:650deg; opacity:.75; } }
+        @keyframes winner-pop { 0% { transform:translate(-50%,-50%) scale(.35); opacity:0; } 70% { transform:translate(-50%,-50%) scale(1.08); opacity:1; } 100% { transform:translate(-50%,-50%) scale(1); opacity:1; } }
+        @keyframes winner-glow { 50% { box-shadow:0 9px 0 #6c2674,0 0 42px #ffdb7e,0 0 85px #a524ff; } }
+        @media (prefers-reduced-motion: reduce) { .winning-popup,.confetti-rain span { animation:none; } .confetti-rain { display:none; } }
         .confetti-field { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
         .confetti-field span { position:absolute; width:8px; height:18px; border-radius:3px; box-shadow:0 1px 4px #6a23931f; }
         .confetti { position:absolute; z-index:0; width:19px; height:42px; background:linear-gradient(110deg,#fbe29b,#d78c20); border-radius:7px; opacity:.8; transform:rotate(35deg); }
