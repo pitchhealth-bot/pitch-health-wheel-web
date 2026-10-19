@@ -289,6 +289,13 @@ export default function Home() {
                           fill={isCup ? ["#ebd3ff", "#bd89f7", "#330a62"][index - cashRewards.length] : ["#39046b", "#7712d5", "#b775f4", "#4c0b80", "#8c24e6", "#290747", "#8021d4", "#b16deb", "#6211ab", "#4a087c"][index % 10]}
                           stroke="#e3baf7" strokeWidth="1.8"
                         />
+                        <g
+                          style={{
+                            transform: `rotate(${-rotation}deg)`,
+                            transformOrigin: `${slice.textX}px ${slice.textY}px`,
+                            transition: spinning ? "transform 4.2s cubic-bezier(0.12, 0.92, 0.18, 1)" : "none",
+                          }}
+                        >
                         <text
                           x={slice.textX} y={slice.textY - (isCup ? 1 : 0)}
                           textAnchor="middle" dominantBaseline="middle"
@@ -306,6 +313,7 @@ export default function Home() {
                           fontSize="17" opacity=".94" fill={isCup && index !== cashRewards.length + 2 ? "#5d138f" : "#ffffff"}>
                           {isCup ? "★" : "$"}
                         </text>
+                        </g>
                       </g>
                     );
                   })}
