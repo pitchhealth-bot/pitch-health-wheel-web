@@ -81,6 +81,30 @@ function normalizeAngle(angle) {
   return ((angle % 360) + 360) % 360;
 }
 
+// The wheel to show for a given awarded prize. A Cup Point prize won during the
+// promo stays visible on the wheel after the promo ends, so a refresh can still point at it.
+function wheelRewardsFor(rewardValue) {
+  const current = getRewards();
+  if (!rewardValue || current.some((r) => r.value === rewardValue)) return current;
+  if (cupPointRewards.some((r) => r.value === rewardValue)) {
+    return [...cashRewards, ...cupPointRewards];
+  }
+  return current;
+}
+
+// Wheel rotation (0–360) that puts the given prize's slice under the top pointer.
+function angleForReward(list, rewardValue) {
+  const index = list.findIndex((r) => r.value === rewardValue);
+  if (index === -1) return null;
+  const slice = 360 / list.length;
+  return normalizeAngle(360 - (index * slice + slice / 2));
+}
+
+// Smallest forward rotation from `current` that lands on `targetAngle`.
+function rotateForwardTo(current, targetAngle) {
+  return current + normalizeAngle(targetAngle - normalizeAngle(current));
+}
+
 export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState("");
@@ -116,7 +140,7 @@ export default function Home() {
         textY: textPoint.y,
       };
     });
-  }, [center, radius, textRadius, degreesPerSlice]);
+  }, [rewards, center, radius, textRadius, degreesPerSlice]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -144,8 +168,7 @@ export default function Home() {
         }
 
         if (data.status === "Completed") {
-          setAlreadyUsed(true);
-          setResult(data.reward || "");
+          showAwardedReward(data.reward || "");
         }
       })
       .catch((err) => {
@@ -157,7 +180,18 @@ export default function Home() {
       });
   }, []);
 
-  const spin = () => {
+  // Show a prize the server already recorded, with the pointer on its slice
+  // (used on page load/refresh and when the link was already spun elsewhere).
+  function showAwardedReward(rewardValue) {
+    setAlreadyUsed(true);
+    setResult(rewardValue);
+    const list = wheelRewardsFor(rewardValue);
+    setRewards(list);
+    const angle = angleForReward(list, rewardValue);
+    if (angle !== null) setRotation((current) => rotateForwardTo(current, angle));
+  }
+
+  const spin = async () => {
     if (spinning || alreadyUsed || loadingSession || !sessionId || !API_BASE) {
       return;
     }
@@ -165,6 +199,20 @@ export default function Home() {
     setSpinning(true);
     setResult("");
     setErrorMessage("");
+
+    // If this link was already spun (e.g. in another tab), show that prize instead
+    // of spinning to a new one the server would reject.
+    try {
+      const res = await fetch(`${API_BASE}/session-status?sessionId=${encodeURIComponent(sessionId)}`);
+      const data = await res.json();
+      if (res.ok && data.status === "Completed") {
+        showAwardedReward(data.reward || "");
+        setSpinning(false);
+        return;
+      }
+    } catch (err) {
+      console.error("Pre-spin status check failed:", err);
+    }
 
     // Re-evaluate eligibility at spin time, even if the page was left open.
     const eligibleRewards = getRewards();
@@ -210,6 +258,13 @@ export default function Home() {
         }
 
         const finalReward = data.reward || selected.value;
+        if (finalReward !== selected.value) {
+          // The server kept an earlier prize; move the pointer to it so the wheel matches.
+          const list = wheelRewardsFor(finalReward);
+          setRewards(list);
+          const angle = angleForReward(list, finalReward);
+          if (angle !== null) setRotation(rotateForwardTo(finalRotation, angle));
+        }
         setResult(finalReward);
         setAlreadyUsed(true);
       } catch (err) {
